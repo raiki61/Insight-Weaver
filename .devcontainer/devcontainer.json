@@ -1,18 +1,41 @@
 {
+  // VS CodeのUIに表示される開発環境の名前です。自由に設定できます。
   "name": "Monorepo Project",
+
+  // Dev Containerを起動するために使用するDocker Composeファイルのパスを指定します。
+  // この`.devcontainer.json`ファイルからの相対パスで記述します。
   "dockerComposeFile": "../docker-compose.yml",
+
+  // docker-compose.yml内で定義されたサービスのうち、VS Codeが接続するサービス名を指定します。
+  // ここでは「backend」サービスに接続し、その中で開発作業を行います。
   "service": "backend",
+
+  // コンテナに接続した際に、VS Codeで開くデフォルトのフォルダ（作業ディレクトリ）を指定します。
   "workspaceFolder": "/app",
 
-  // This sets the environment variable for the entire container
+  // VS Codeがコンテナに接続した際に設定される環境変数を定義します。
+  // VS Code内のターミナルやデバッガなどに適用されます。
   "containerEnv": {
+    // Pythonがモジュールやライブラリを探すためのパスに「/app」を追加します。
+    // これにより、プロジェクトルートからのインポートが容易になります。
     "PYTHONPATH": "/app"
   },
 
+  // VS Code自体の設定をカスタマイズする項目です。
   "customizations": {
+    // VS Codeに特化した設定を記述します。
     "vscode": {
-      "extensions": ["ms-python.python"]
+      // Dev Container内に自動的にインストールしたいVS Codeの拡張機能を指定します。
+      "extensions": [
+        "ms-python.python" // Microsoft製の公式Python拡張機能
+      ]
     }
   },
-  "forwardPorts": [8000, 8080]
+
+  // コンテナのポートをローカルマシン（ホストOS）に自動的に転送（フォワード）します。
+  // これにより、`localhost:8000`のようにブラウザからアクセスできます。
+  "forwardPorts": [
+    8000, // backendサービスのポート
+    8080 // frontendサービスのポートなど
+  ]
 }
