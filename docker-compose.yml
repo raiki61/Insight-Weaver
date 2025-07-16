@@ -11,7 +11,7 @@ services:
       - "5678:5678"
     volumes:
       - ./services/backend:/app/services/backend
-      - ./packages/common_types:/app/common_types
+      - ./packages:/app/packages
     # --- デバッグ用のコマンドに修正 ---
     # python -m debugpy でデバッグサーバーを起動し、クライアント(VS Code)の接続を待ちます。
     # 接続後に uvicorn が起動します。--reload との併用も可能です。

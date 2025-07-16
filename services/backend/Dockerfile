@@ -22,7 +22,7 @@ COPY ./services/backend/requirements.txt .
 #    まず requirements.txt に記載されたライブラリをインストールし、
 #    次にローカルの共有パッケージをインストールします。
 RUN pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir ./packages/common_types
+    && pip install --no-cache-dir -e ./packages/common_types
 
 # --- アプリケーションコードのコピー ---
 # 3. アプリケーションのソースコードをコピーします。
