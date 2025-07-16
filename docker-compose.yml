@@ -1,0 +1,34 @@
+# docker-compose.yml
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: ./services/backend/Dockerfile
+    ports:
+      - "8000:8000"
+      # --- デバッガ接続用のポートを追加 ---
+      - "5678:5678"
+    volumes:
+      - ./services/backend:/app/services/backend
+      - ./packages/common_types:/app/common_types
+    # --- デバッグ用のコマンドに修正 ---
+    # python -m debugpy でデバッグサーバーを起動し、クライアント(VS Code)の接続を待ちます。
+    # 接続後に uvicorn が起動します。--reload との併用も可能です。
+    command: >
+      sh -c "python -m debugpy --wait-for-client --listen 0.0.0.0:5678 -m uvicorn services.backend.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./services/frontend/Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ./services/frontend:/app
+      - /app/node_modules
+
+# ネットワークの定義（変更なし）
+networks:
+  default:
+    name: insight-weaver_default
