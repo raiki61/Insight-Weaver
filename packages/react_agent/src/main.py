@@ -15,12 +15,12 @@ async def main():
     settings = load_config(str(config_path))
 
     client = Client(
-        ollama_config=settings.ollama
+        config=settings
     )
     client.initialize()
 
     # Clientからのストリームをasync forで受け取る
-    user_prompt = "ヤッホー大阪KTです。たこ焼き愛するFJD"
+    user_prompt = "ヤッホー大阪KTです。たこ焼き愛するFJD. このネタ知ってますか"
     print(f"👤 User: {user_prompt}")
     print("\n🤖 AI:")
 

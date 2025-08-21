@@ -1,10 +1,64 @@
+import copy
 from typing import Sequence, AsyncGenerator, List
 
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langchain_ollama import ChatOllama
-from tenacity import stop_after_attempt, wait_random_exponential
 
 from config.config import OllamaConfig
+
+
+def is_valid_message(message: BaseMessage) -> bool:
+    """
+    モデルからの応答であるAIMessageが有効かどうかを判定する。
+    HumanMessageなどは常に有効とみなす。
+    """
+    # AIMessageでなければ、常に有効（ユーザー入力などは検証不要）
+    if not isinstance(message, AIMessage):
+        return True
+
+    # AIMessageの場合、content属性が存在し、かつ空文字列でないことを確認
+    # bool(message.content) は None や "" の場合に False になる
+    return bool(message.content and isinstance(message.content, str))
+
+def extract_curated_history(comprehensive_history: List[BaseMessage]) -> List[BaseMessage]:
+    """
+    完全な履歴から、モデルへの入力に適した有効な履歴（curated history）を抽出する。
+
+    モデルが無効な応答（安全フィルターなど）を返した場合、その応答と、それを引き起こした直前のユーザー入力を履歴から除外する。
+    :param comprehensive_history:
+    :return:
+    """
+    if not comprehensive_history:
+        return []
+
+    curated_history: List[BaseMessage] = []
+    i = 0
+    length = len(comprehensive_history)
+
+    while i < length:
+        current_message = comprehensive_history[i]
+        # ユーザのターンはそのまま追加
+        if isinstance(current_message, HumanMessage):
+            curated_history.append(comprehensive_history[i])
+            i += 1
+        else:
+            model_output: List[BaseMessage] = []
+            is_valid_turn = True
+
+            while i < length and isinstance(comprehensive_history[i], AIMessage):
+                current_message = comprehensive_history[i]
+                model_output.append(current_message)
+                if not is_valid_message(current_message):
+                    is_valid_turn = False
+                i += 1
+
+            if is_valid_turn:
+                curated_history.extend(model_output)
+            else:
+                if curated_history:
+                    curated_history.pop()
+
+    return curated_history
 
 
 class Chat:
@@ -65,6 +119,30 @@ class Chat:
         ai_message = AIMessage(content=full_response_content)
         self.history.append(ai_message)
 
-    def get_history(self) -> List[BaseMessage]:
-        """現在の会話履歴を返す"""
-        return self.history
+    def get_history(self, curated: bool = False) -> List[BaseMessage]:
+        if curated:
+            history = extract_curated_history(self.history)
+        else:
+            history = self.history
+
+        return copy.deepcopy(history)
+
+    def add_history(self, message: BaseMessage):
+        self.history.append(message)
+
+    def set_history(self, history: List[BaseMessage]):
+        self.history = history
+
+    def count_tokens(self, messages: List[BaseMessage]) -> int:
+        # TODO 責務としてここでよいのか
+
+        # TODO これちゃんと計算出来てるか怪しいので確認が必要
+        return self.chat.get_num_tokens_from_messages(messages)
+
+    def token_linit(self):
+        # TODO 責務としてここでよいのか
+
+
+        return self.chat.token_
+
+
