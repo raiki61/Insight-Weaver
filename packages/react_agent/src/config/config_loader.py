@@ -1,9 +1,10 @@
 import os
-import yaml
 from typing import Any
+
+import yaml
 from dotenv import load_dotenv
+
 from .config import Config
-from pathlib import Path
 
 
 def _replace_env_vars(config: Any) -> Any:
@@ -42,9 +43,3 @@ def load_config(path: str) -> Config:
     except Exception as e:
         print(f"設定のバリデーションに失敗しました: {e}")
         raise
-
-
-# アプリケーション全体で共有するためのインスタンス
-# 起動時に一度だけ読み込む
-config_path = Path(__file__).parent.parent.parent / "config.yml"
-settings = load_config(str(config_path))

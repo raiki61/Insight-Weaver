@@ -1,6 +1,6 @@
 ollama:
   base_url: "${OLLAMA_BASE_URL}"
   model_name: "${OLLAMA_MODEL_NAME}"
-  temperature: "1.0"
+  temperature: 1.0
 
 
