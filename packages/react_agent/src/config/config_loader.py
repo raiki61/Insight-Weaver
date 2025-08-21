@@ -30,7 +30,7 @@ def load_config(path: str) -> Config:
     load_dotenv()
 
     # 2. YAML ファイルを辞書として読み込む
-    with open(path, 'r', encoding='utf-8') as f:
+    with open(path, "r", encoding="utf-8") as f:
         raw_config = yaml.safe_load(f)
 
     # 3. 環境変数でプレースホルダーを置換

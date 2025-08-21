@@ -6,7 +6,6 @@ class OllamaConfig(BaseModel):
     model_name: str
     temperature: float
 
+
 class Config(BaseModel):
     ollama: OllamaConfig
-
-
