@@ -4,4 +4,4 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["langchain-community"]
+dependencies = ["langchain-core", "langchain-ollama", "langchain-community", "pyyaml", "pydantic", "python-dotenv"]
