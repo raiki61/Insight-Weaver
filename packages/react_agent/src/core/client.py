@@ -25,7 +25,7 @@ class Client:
     def reset_chat(self):
         self.chat = self.start_chat()
 
-    async def start_chat(self) -> Chat:
+    def start_chat(self) -> Chat:
         return Chat(ollama_config=self.ollama_config, history=[])
 
     async def add_history(self):
