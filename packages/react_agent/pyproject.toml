@@ -4,4 +4,59 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["langchain-community"]
+dependencies = [
+    "langchain-core",
+    "langchain-ollama",
+    "langchain-community",
+    "pyyaml",
+    "pydantic",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+]
+
+dev = [
+    "pytest",
+    "ruff", # リンター兼フォーマッター
+]
+
+[tool.pytest.ini_options]
+# pytestの最低バージョンを指定
+minversion = "7.0"
+
+# テスト実行時に常に適用するコマンドラインオプション
+# -ra: 実行結果のサマリーを詳細に表示
+# -v:  詳細なログを出力
+# --strict-markers: 未登録のマーカーを使ったらエラーにする
+addopts = "-ra -v --strict-markers"
+
+# テストファイルを探すディレクトリを指定
+testpaths = [
+    "tests",
+]
+
+# テストとして認識するファイル名のパターン
+python_files = "test_*.py"
+
+# テストとして認識するクラス名のパターン
+python_classes = "Test*"
+
+# テストとして認識する関数名のパターン
+python_functions = "test_*"
+
+# テスト実行中に利用する環境変数を設定
+# .envファイルを使わず、テスト用の変数をここで定義できる
+env = [
+    "ENV_FOR_TEST=testing",
+    "ANOTHER_VAR=123",
+]
+
+# カスタムマーカーを登録
+# @pytest.mark.slow のようなマーカーを付けられるようにする
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks integration tests",
+]

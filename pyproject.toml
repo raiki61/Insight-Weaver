@@ -1,0 +1,6 @@
+
+# 全体の場の設定を記載します。
+
+# これにより、uvは `packages/*` を一つのプロジェクトとして認識する
+[tool.uv.workspace]
+members = ["packages/*"]
