@@ -17,7 +17,7 @@ async def main():
     client = Client(
         ollama_config=settings.ollama
     )
-    await client.start_chat()
+    client.initialize()
 
     # Clientからのストリームをasync forで受け取る
     user_prompt = "ヤッホー大阪KTです。たこ焼き愛するFJD"
