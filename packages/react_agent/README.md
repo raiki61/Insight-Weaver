@@ -1,7 +1,10 @@
 
+# First of all
+
+enter your venv on project root. and then enter package that you want to develop.
+
 ## How to develop
 
-enter your venv on project root.
 
 - `uv sync`
 - `uv pip install -e .[dev]`
