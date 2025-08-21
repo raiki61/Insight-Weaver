@@ -18,7 +18,7 @@ class Client:
         messages = [
             ("human", "やっほー。こんにちは。."),
         ]
-        ai_msg = await ollama.invoke(messages)
+        ai_msg = await ollama.ainvoke(messages)
         print(ai_msg)
         pass
 
