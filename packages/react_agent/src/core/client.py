@@ -1,6 +1,7 @@
-from typing import Union, List, Dict
+from typing import Union, List, Dict, AsyncGenerator
 
-from langchain_ollama import ChatOllama
+from config.config import OllamaConfig
+from core.chat import Chat
 
 
 class Client:
@@ -14,36 +15,31 @@ class Client:
         - 次の発話者: 次はAIが話すべきか、ユーザの入力を待つべきか
     """
 
-    def __init__(self, ollama_base_url: str, model_name: str, temperature: float):
-        self.base_url = ollama_base_url
-        self.model_name = model_name
-        self.temperature = temperature
+    def __init__(self, ollama_config: OllamaConfig):
+        self.chat : Chat | None = None
+        self.ollama_config = ollama_config
 
-    async def start_chat(self):
-        ollama = ChatOllama(
-            base_url=self.base_url, model=self.model_name, temperature=self.temperature
-        )
-        messages = [
-            ("human", "やっほー。こんにちは。."),
-        ]
-        ai_msg = await ollama.ainvoke(messages)
-        print(ai_msg)
-        pass
+    def initialize(self):
+        self.chat = self.start_chat()
 
-    async def initialize(self):
-        pass
+    def reset_chat(self):
+        self.chat = self.start_chat()
+
+    async def start_chat(self) -> Chat:
+        return Chat(ollama_config=self.ollama_config, history=[])
 
     async def add_history(self):
         pass
 
-    def is_initialized(self):
-        pass
+    async def send_message_stream(
+            self,
+            contents: Union[str, List[Union[str, Dict]]]
+    ) -> AsyncGenerator[str, None]:
 
-    async def reset_chat(self):
-        pass
-
-    async def send_message_stream(self, contents: Union[str, List[Union[str, Dict]]]):
         if not self.chat:
-            self.start_chat()
+            self.chat = await self.start_chat()
 
-        pass
+        # awaitではなく、async forでストリームを中継する
+        # Chatクラスからのトークンの流れを、そのまま呼び出し元に流す
+        async for token in self.chat.send_message_stream(contents):
+            yield token

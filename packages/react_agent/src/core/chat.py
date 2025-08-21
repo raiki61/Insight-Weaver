@@ -1,8 +1,8 @@
-from typing import Sequence, Any
+from typing import Sequence, AsyncGenerator, List
 
-from langchain_core.messages import BaseMessage
-from langchain_core.prompt_values import PromptValue
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langchain_ollama import ChatOllama
+from tenacity import stop_after_attempt, wait_random_exponential
 
 from config.config import OllamaConfig
 
@@ -17,27 +17,54 @@ class Chat:
             - API応答: レスポンスは有効であるか、エラーは無いか
     """
 
-    def __init__(self, ollama_config: OllamaConfig, history: PromptValue | str | Sequence[
-        BaseMessage | list[str] | tuple[str, str] | str | dict[str, Any]]):
+    def __init__(self, ollama_config: OllamaConfig, history: Sequence[BaseMessage] = None):
         """
-        TODO ollama以外のプロバイダー対応
-        :param ollama_config:
-        :param history:
+        :param ollama_config: Ollamaの設定
+        :param history: 初期化時の会話履歴
         """
         self.config = ollama_config
-        self.history = history
-        self.chat = ChatOllama(temperature=ollama_config.temperature, base_url=ollama_config.base_url, model=OllamaConfig.model_name)
+        self.history: List[BaseMessage] = list(history) if history else []
 
-    async def send_message(self, prompt_id: str):
-        pass
+        # ChatOllamaインスタンスを生成し、リトライ処理を追加
+        # ネットワークエラーなどで最大3回まで、ランダムな待ち時間で再試行する
+        self.chat = ChatOllama(
+            temperature=ollama_config.temperature,
+            base_url=ollama_config.base_url,
+            model=ollama_config.model_name
+        )
+    def send_message(self, message: str) -> BaseMessage:
+        """メッセージを送信し、完全な応答を一度に受け取る（同期的）"""
 
-    async def send_message_stream(self, prompt_id: str):
-        """
-        1. 渡された会話履歴を使って、実際にAPIへのリクエストを送信します。
-        2. APIからの応答をストリーミングで受け取ります。
-        3. 通信エラーが発生した場合のリトライを処理します。
-        4. 受け取った応答を整形し、履歴に追加します。
-        :param prompt_id:
-        :return:
-        """
-        pass
+        # 新しいユーザーメッセージを履歴に追加
+        user_message = HumanMessage(content=message)
+        self.history.append(user_message)
+
+        # 履歴全体を渡してAPIを呼び出し
+        ai_response = self.chat.invoke(self.history)
+
+        # AIの応答を履歴に追加
+        self.history.append(ai_response)
+
+        return ai_response
+
+    async def send_message_stream(self, message: str) -> AsyncGenerator[str, None]:
+        """メッセージを送信し、応答をストリーミングで受け取る（非同期）"""
+
+        # 新しいユーザーメッセージを履歴に追加
+        user_message = HumanMessage(content=message)
+        self.history.append(user_message)
+
+        full_response_content = ""
+        # 履歴全体をストリーミングAPIに渡す
+        async for chunk in self.chat.astream(self.history):
+            # chunk.content が文字列の塊
+            yield chunk.content
+            full_response_content += chunk.content
+
+        # ストリーミング完了後、完全な応答をAIメッセージとして履歴に追加
+        ai_message = AIMessage(content=full_response_content)
+        self.history.append(ai_message)
+
+    def get_history(self) -> List[BaseMessage]:
+        """現在の会話履歴を返す"""
+        return self.history
