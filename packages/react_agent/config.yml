@@ -3,4 +3,6 @@ ollama:
   model_name: "${OLLAMA_MODEL_NAME}"
   temperature: 1.0
 
+chat_compression:
+  context_percentage_threshold: 0.7
 
