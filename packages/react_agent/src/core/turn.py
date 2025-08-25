@@ -1,6 +1,7 @@
-from abc import ABC
+from dataclasses import dataclass
 
 
-class ChatCompressInformation(ABC):
+@dataclass
+class ChatCompressInformation:
     original_token_count: int
     new_token_count: int
