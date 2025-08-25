@@ -99,7 +99,7 @@ class Client:
                 else COMPRESSION_TOKEN_THRESHOLD
             )
 
-            token_limit = 128000 # TODO token_limit(model)
+            token_limit = 12800 # TODO token_limit(model)
             if total_tokens < threshold * token_limit:
                 print("Token count is under the threshold. No compression needed.")
                 return None

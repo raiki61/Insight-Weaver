@@ -139,7 +139,7 @@ class Chat:
         # TODO これちゃんと計算出来てるか怪しいので確認が必要
         return self.chat.get_num_tokens_from_messages(messages)
 
-    def token_linit(self):
+    def token_limit(self):
         # TODO 責務としてここでよいのか
 
 
