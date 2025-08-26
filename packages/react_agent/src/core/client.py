@@ -69,7 +69,7 @@ class Client:
 
     async def send_message_stream(
             self,
-            contents: Union[str, List[Union[str, Dict]]]
+            contents: str
     ) -> AsyncGenerator[str, None]:
 
         if not self.chat:
