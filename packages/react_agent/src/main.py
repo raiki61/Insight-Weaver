@@ -15,11 +15,19 @@ async def main():
     settings = load_config(str(config_path))
 
     client = Client(
-        ollama_base_url=settings.ollama.base_url,
-        model_name=settings.ollama.model_name,
-        temperature=settings.ollama.temperature,
+        config=settings
     )
-    await client.start_chat()
+    client.initialize()
+
+    # Clientからのストリームをasync forで受け取る
+    user_prompt = "ヤッホー大阪KTです。たこ焼き愛するFJD. このネタ知ってますか"
+    print(f"👤 User: {user_prompt}")
+    print("\n🤖 AI:")
+
+    response_stream =  client.send_message_stream(user_prompt)
+    async for chunk in response_stream:
+        print(chunk, end="", flush=True)
+    print()
 
 
 if __name__ == "__main__":

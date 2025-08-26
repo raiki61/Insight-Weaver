@@ -6,6 +6,10 @@ class OllamaConfig(BaseModel):
     model_name: str
     temperature: float
 
+class ChatCompressionConfig(BaseModel):
+    context_percentage_threshold: float
 
 class Config(BaseModel):
+    # TODO test
     ollama: OllamaConfig
+    chat_compression: ChatCompressionConfig
