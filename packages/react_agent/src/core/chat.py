@@ -142,7 +142,7 @@ class Chat:
     def token_limit(self):
         # TODO 責務としてここでよいのか
 
-
-        return self.chat.token_
+        # TODO: モデルごとのトークン上限を取得する実装が必要です。
+        raise NotImplementedError("token_limit is not yet implemented.")
 
 
