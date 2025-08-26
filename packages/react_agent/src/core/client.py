@@ -105,4 +105,4 @@ class Client:
                 return None
 
         # TODO 続き
-        return True
+        raise NotImplementedError("Chat compression logic is not yet implemented.")
