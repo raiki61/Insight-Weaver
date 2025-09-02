@@ -3,7 +3,7 @@ name = "react-agent"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "langchain-core",
     "langchain-ollama",
@@ -11,6 +11,7 @@ dependencies = [
     "pyyaml",
     "pydantic",
     "python-dotenv",
+    "langchain-mcp-adapters>=0.1.9",
 ]
 
 [project.optional-dependencies]

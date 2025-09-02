@@ -1,3 +1,4 @@
+import logging
 from typing import Dict, List
 
 from langchain_core.tools import BaseTool
@@ -17,7 +18,7 @@ class ToolRegistry:
         if tool.name in self.tools:
             raise ValueError(f"Tool with name '{tool.name}' already exists.")
         self.tools[tool.name] = tool
-        print(f"Tool '{tool.name}' registered.")
+        logging.info(f"Tool '{tool.name}' registered.")
 
     def find_tool(self, tool_name: str) -> BaseTool:
         """ツールの発見"""

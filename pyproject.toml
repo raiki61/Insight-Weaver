@@ -1,6 +1,17 @@
 
 # 全体の場の設定を記載します。
 
-# これにより、uvは `packages/*` を一つのプロジェクトとして認識する
-[tool.uv.workspace]
-members = ["packages/*"]
+[workspace]
+members = ["packages/react_agent", "packages/tools/mcp_servers"]
+
+[project]
+name = "insight-weaver"
+version = "0.0.0"
+dependencies = ["react-agent", "mcp-servers"]
+
+
+[tool.uv.sources]
+react-agent = {path = "packages/react_agent", editable = true}
+mcp-servers = {path = "packages/tools/mcp_servers", editable = true}
+
+

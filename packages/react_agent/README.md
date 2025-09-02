@@ -3,6 +3,8 @@
 
 enter your venv on project root. and then enter package that you want to develop.
 
+`cd pa*/re*`
+
 ## How to develop
 
 
