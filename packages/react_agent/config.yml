@@ -6,3 +6,7 @@ ollama:
 chat_compression:
   context_percentage_threshold: 0.7
 
+mcp_servers:
+
+mcp_server:
+
