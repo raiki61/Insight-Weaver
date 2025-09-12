@@ -5,6 +5,7 @@ from langchain_core.messages import BaseMessage
 from config.config import Config
 from core.chat import Chat
 from core.turn import ChatCompressInformation
+from tools.tool_registry import ToolRegistry
 
 COMPRESSION_TOKEN_THRESHOLD = 0.7
 
@@ -45,10 +46,11 @@ class Client:
         - 次の発話者: 次はAIが話すべきか、ユーザの入力を待つべきか
     """
 
-    def __init__(self, config: Config):
-        self.chat : Chat | None = None
+    def __init__(self, config: Config, tool_registry: ToolRegistry = None):
+        self.chat: Chat | None = None
         self.ollama_config = config.ollama
         self.chat_compression_config = config.chat_compression
+        self.tool_registry = tool_registry
 
     def get_chat(self) -> Chat:
         if not self.chat:
@@ -62,16 +64,12 @@ class Client:
         self.chat = self.start_chat()
 
     def start_chat(self) -> Chat:
-        return Chat(ollama_config=self.ollama_config, history=[])
+        return Chat(ollama_config=self.ollama_config, history=[], tool_registry=self.tool_registry)
 
     async def add_history(self):
         pass
 
-    async def send_message_stream(
-            self,
-            contents: str
-    ) -> AsyncGenerator[str, None]:
-
+    async def send_message_stream(self, contents: str) -> AsyncGenerator[str, None]:
         if not self.chat:
             self.chat = self.start_chat()
 
@@ -80,7 +78,9 @@ class Client:
         async for token in self.chat.send_message_stream(contents):
             yield token
 
-    async def try_compress_chat(self, prompt_id: str, force: bool) -> Optional[ChatCompressInformation]:
+    async def try_compress_chat(
+        self, prompt_id: str, force: bool
+    ) -> Optional[ChatCompressInformation]:
         curated_history = self.get_chat().get_history(True)
 
         if len(curated_history) == 0:
@@ -91,7 +91,9 @@ class Client:
 
         # FIXME ここでtoken計算できない場合などは、警告出したほうが良さそう
 
-        context_percentage_threshold = self.chat_compression_config.context_percentage_threshold
+        context_percentage_threshold = (
+            self.chat_compression_config.context_percentage_threshold
+        )
         if not force:
             threshold = (
                 context_percentage_threshold
@@ -99,7 +101,7 @@ class Client:
                 else COMPRESSION_TOKEN_THRESHOLD
             )
 
-            token_limit = 12800 # TODO token_limit(model)
+            token_limit = 12800  # TODO token_limit(model)
             if total_tokens < threshold * token_limit:
                 print("Token count is under the threshold. No compression needed.")
                 return None

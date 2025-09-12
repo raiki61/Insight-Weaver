@@ -4,14 +4,12 @@ from typing import Dict, List
 from langchain_core.tools import BaseTool
 from langchain_core.utils.function_calling import convert_to_openai_function
 
-from config.config import Config
-
 
 class ToolRegistry:
     """ツールの登録、発見、管理を行うクラス"""
-    def __init__(self, config: Config):
-        self.tools : Dict[str, BaseTool] = {}
-        self.config = config
+
+    def __init__(self):
+        self.tools: Dict[str, BaseTool] = {}
 
     def register_tool(self, tool: BaseTool):
         """ツールの登録"""
@@ -35,4 +33,3 @@ class ToolRegistry:
         全てのツールをLLM（特にOpenAI）が要求するFunction Callingのスキーマ形式に変換して取得します。
         """
         return [convert_to_openai_function(tool) for tool in self.tools.values()]
-

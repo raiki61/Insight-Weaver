@@ -1,45 +1,36 @@
+# config/config_loader.py
 import os
-from typing import Any
+from typing import Any, Optional
 
 import yaml
 from dotenv import load_dotenv
 
 from .config import Config
+from .env_resolver import interpolate_tree
 
 
-def _replace_env_vars(config: Any) -> Any:
-    """設定データ内のプレースホルダー `${VAR}` を環境変数の値で再帰的に置換する"""
-    if isinstance(config, dict):
-        return {k: _replace_env_vars(v) for k, v in config.items()}
-    elif isinstance(config, list):
-        return [_replace_env_vars(i) for i in config]
-    elif isinstance(config, str) and config.startswith("${") and config.endswith("}"):
-        env_var = config[2:-1]  # `${VAR}` から `VAR` を抽出
-        value = os.environ.get(env_var)
-        if value is None:
-            raise ValueError(f"環境変数 '{env_var}' が設定されていません。")
-        return value
-    return config
-
-
-def load_config(path: str) -> Config:
+def load_config(
+    path: str,
+    *,
+    dotenv_path: Optional[str] = None,
+    override_env: bool = False,
+    strict_env: bool = True,
+) -> Config:
     """
-    設定ファイルを読み込み、環境変数で値を置換し、Pydanticモデルで検証して返す。
+    設定ファイルを読み込み、環境変数展開し、Pydantic で検証して返す。
+    - dotenv_path: .env のパス（None ならカレント等の既定探索）
+    - override_env: True で .env が OS 環境を上書き、False で OS 環境が優先
+    - strict_env: True で未定義 ${VAR} は例外。False なら置換せず残す。
     """
-    # 1. .env ファイルを読み込み、環境変数を設定
-    load_dotenv()
+    # 1) .env 読み込み
+    load_dotenv(dotenv_path, override=override_env)
 
-    # 2. YAML ファイルを辞書として読み込む
+    # 2) YAML 読み込み
     with open(path, "r", encoding="utf-8") as f:
-        raw_config = yaml.safe_load(f)
+        raw = yaml.safe_load(f) or {}
 
-    # 3. 環境変数でプレースホルダーを置換
-    processed_config = _replace_env_vars(raw_config)
+    # 3) 環境変数・~・$VAR 展開（共通ユーティリティ）
+    processed = interpolate_tree(raw, strict=strict_env)
 
-    # 4. Pydanticモデルにデータを流し込み、バリデーションを実行
-    try:
-        config = Config(**processed_config)
-        return config
-    except Exception as e:
-        print(f"設定のバリデーションに失敗しました: {e}")
-        raise
+    # 4) Pydantic 検証
+    return Config.model_validate(processed)

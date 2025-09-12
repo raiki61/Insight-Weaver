@@ -7,6 +7,8 @@ chat_compression:
   context_percentage_threshold: 0.7
 
 mcp_servers:
-
-mcp_server:
+  servers:
+    sample_server:
+      transport: streamable_http
+      url: http://localhost:8000/mcp/
 

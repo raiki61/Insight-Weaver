@@ -1,4 +1,3 @@
-
 class AppBuilder:
     """
     app を構築するファクトリ

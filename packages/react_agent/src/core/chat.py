@@ -5,6 +5,7 @@ from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langchain_ollama import ChatOllama
 
 from config.config import OllamaConfig
+from tools.tool_registry import ToolRegistry
 
 
 def is_valid_message(message: BaseMessage) -> bool:
@@ -20,7 +21,10 @@ def is_valid_message(message: BaseMessage) -> bool:
     # bool(message.content) は None や "" の場合に False になる
     return bool(message.content and isinstance(message.content, str))
 
-def extract_curated_history(comprehensive_history: List[BaseMessage]) -> List[BaseMessage]:
+
+def extract_curated_history(
+    comprehensive_history: List[BaseMessage],
+) -> List[BaseMessage]:
     """
     完全な履歴から、モデルへの入力に適した有効な履歴（curated history）を抽出する。
 
@@ -71,21 +75,28 @@ class Chat:
             - API応答: レスポンスは有効であるか、エラーは無いか
     """
 
-    def __init__(self, ollama_config: OllamaConfig, history: Sequence[BaseMessage] = None):
+    def __init__(
+        self, ollama_config: OllamaConfig, history: Sequence[BaseMessage] = None, tool_registry: ToolRegistry = None
+    ):
         """
         :param ollama_config: Ollamaの設定
         :param history: 初期化時の会話履歴
         """
         self.config = ollama_config
         self.history: List[BaseMessage] = list(history) if history else []
+        self.tool_registry = tool_registry
 
         # ChatOllamaインスタンスを生成し、リトライ処理を追加
         # ネットワークエラーなどで最大3回まで、ランダムな待ち時間で再試行する
         self.chat = ChatOllama(
             temperature=ollama_config.temperature,
             base_url=ollama_config.base_url,
-            model=ollama_config.model_name
+            model=ollama_config.model_name,
+            # reasoning=True,
         )
+        if tool_registry is not None:
+            self.chat = self.chat.bind_tools(tools=self.tool_registry.get_all_tools())
+
     def send_message(self, message: str) -> BaseMessage:
         """メッセージを送信し、完全な応答を一度に受け取る（同期的）"""
 
@@ -144,5 +155,3 @@ class Chat:
 
         # TODO: モデルごとのトークン上限を取得する実装が必要です。
         raise NotImplementedError("token_limit is not yet implemented.")
-
-
